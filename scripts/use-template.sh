@@ -9,7 +9,9 @@ DESC="${3:?missing description}"
 
 if [ "$PKG" != "app" ]; then
   git mv src/app "src/$PKG"
-  grep -rl --exclude-dir=.git -e 'app\.' -e '"app"' -e "'app'" -e 'module app' . 2>/dev/null \
+  # Exclude this script: rewriting its own '"app"' guard made a second run
+  # silently skip the rename.
+  grep -rl --exclude-dir=.git --exclude=use-template.sh -e 'app\.' -e '"app"' -e "'app'" -e 'module app' . 2>/dev/null \
     | while read -r f; do
         sed -i "s/\bapp\./$PKG./g; s/\"app\"/\"$PKG\"/g; s/'app'/'$PKG'/g" "$f"
       done
@@ -23,3 +25,4 @@ sed -i "s/PROJECT_NAME/$REPO/g; s|Pranay777777/REPO|Pranay777777/$REPO|g" README
 
 echo "Renamed to $REPO (package: $PKG)."
 echo "Next: fill in the README, then run 'make install && make test'."
+echo "This script is single-use: git rm scripts/use-template.sh"
